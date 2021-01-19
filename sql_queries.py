@@ -47,9 +47,9 @@ staging_events_table_create= ("""CREATE TABLE IF NOT EXISTS staging_events
 
 staging_songs_table_create = ("""CREATE TABLE IF NOT EXISTS staging_songs
 (
-    song_id varchar NOT NULL,
-    num_songs bigint NOT NULL,
-    artist_id varchar NOT NULL,
+    song_id varchar,
+    num_songs bigint,
+    artist_id varchar,
     artist_latitude varchar,
     artist_longitude varchar,
     artist_location varchar,
@@ -63,11 +63,11 @@ staging_songs_table_create = ("""CREATE TABLE IF NOT EXISTS staging_songs
 songplay_table_create = ("""CREATE TABLE IF NOT EXISTS songplays
 (
     songplay_id bigint IDENTITY(0,1) PRIMARY KEY, 
-    start_time timestamp DISTKEY SORTKEY, 
+    start_time timestamp NOT NULL DISTKEY SORTKEY, 
     user_id int NOT NULL, 
     level varchar NOT NULL, 
-    song_id varchar, 
-    artist_id varchar, 
+    song_id varchar NOT NULL, 
+    artist_id varchar NOT NULL, 
     session_id int NOT NULL, 
     location varchar, 
     user_agent varchar
@@ -137,9 +137,9 @@ JSON 'auto'
 
 songplay_table_insert = ("""INSERT INTO songplays
 (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
-SELECT se.ts, se.userId, se.level, ss.song_id, ss.artist_id, se.sessionid, se.location, se.userAgent
+SELECT  DISTINCT(se.ts), se.userId, se.level, ss.song_id, ss.artist_id, se.sessionid, se.location, se.userAgent
 FROM staging_events se
-JOIN staging_songs ss ON se.song = ss.title
+JOIN staging_songs ss ON se.song = ss.title AND se.artist = ss.artist_name AND se.length = ss.duration
 WHERE se.page = 'NextSong' AND se.userId IS NOT NULL
 """)
 
@@ -154,7 +154,7 @@ ORDER BY se1.userId
 
 song_table_insert = ("""INSERT INTO songs
 (song_id, title, artist_id, year, duration)
-SELECT song_id, title, artist_id, year, duration FROM staging_songs
+SELECT DISTINCT(song_id), title, artist_id, year, duration FROM staging_songs
 WHERE song_id IS NOT NULL
 """)
 
@@ -166,7 +166,7 @@ WHERE artist_id IS NOT NULL
 """)
 
 time_table_insert = ("""INSERT INTO time (start_time, hour, day, week, month, year, weekday)
-SELECT start_time,
+SELECT DISTINCT(start_time),
 EXTRACT (HOUR FROM start_time), EXTRACT (DAY FROM start_time),
 EXTRACT (WEEK FROM start_time), EXTRACT (MONTH FROM start_time),
 EXTRACT (YEAR FROM start_time), EXTRACT (WEEKDAY FROM start_time) FROM songplays

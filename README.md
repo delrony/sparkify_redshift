@@ -38,9 +38,9 @@ From this information, we created staging tables and dimentional tables (Star sc
 
     CREATE TABLE IF NOT EXISTS staging_songs
     (
-        song_id varchar NOT NULL,
-        num_songs bigint NOT NULL,
-        artist_id varchar NOT NULL,
+        song_id varchar,
+        num_songs bigint,
+        artist_id varchar,
         artist_latitude varchar,
         artist_longitude varchar,
         artist_location varchar,
@@ -57,11 +57,11 @@ From this information, we created staging tables and dimentional tables (Star sc
     CREATE TABLE IF NOT EXISTS songplays
     (
         songplay_id bigint IDENTITY(0,1) PRIMARY KEY, 
-        start_time timestamp DISTKEY SORTKEY, 
+        start_time timestamp NOT NULL DISTKEY SORTKEY, 
         user_id int NOT NULL, 
         level varchar NOT NULL, 
-        song_id varchar, 
-        artist_id varchar, 
+        song_id varchar NOT NULL, 
+        artist_id varchar NOT NULL, 
         session_id int NOT NULL, 
         location varchar, 
         user_agent varchar
@@ -156,11 +156,11 @@ To check the data in tables, we used the query editor from Amazon Redshift. Afte
 | :---:          |:---:        |
 | staging_events | 8056        |
 | staging_songs  | 14896       |
-| songplays      | 1144        |
+| songplays      | 319         |
 | users          | 97          |
 | songs          | 14896       |
 | artists        | 10025       |
-| time           | 1144        |
+| time           | 319         |
 
 # Purpose of the database
 The database can be used to answer various business queries. Here are some examples:
